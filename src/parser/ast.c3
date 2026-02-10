@@ -10,11 +10,13 @@ faultdef
 fn Lexer? AstNode.parse(&self, Lexer lexer)
 {
 	self.range.start = { lexer.ln, lexer.col };
-	if (try new_lexer = self.decl.parse(lexer))
+	Lexer new_lexer;
+	switch (true)
 	{
+	case @ok(@try(new_lexer, self.decl.parse(lexer))):
 		self.type = DECLARATION;
 		self.range.end = new_lexer.position();
 		return new_lexer;
+	default: return INCOMPATIBLE?;
 	}
-	return INCOMPATIBLE?;
 }

@@ -69,5 +69,6 @@ fn Lexer? AstNodeDecl.parse_function(&self, Lexer lexer)
 		}
 		lexer = temp_lexer;
 	}
+	if (token.type == TokenType.EOS) lexer = temp_lexer;
 	return lexer;
 }

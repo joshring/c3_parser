@@ -3,7 +3,7 @@ import c3::lexer;
 
 import std::io;
 
-const String TEST_STRING = "module  test::new  ;  \n  fn  void  parse  (  Type  type  )  ;  ";
+const String TEST_STRING = "module test::new;\nfn void parse (Type type);";
 fn int main(String[] args)
 {
 	Lexer lexer;
