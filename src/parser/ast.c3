@@ -11,7 +11,7 @@ fn Lexer? AstNode.parse(&self, Lexer lexer)
 {
 	self.range.start = { lexer.ln, lexer.col };
 	Lexer new_lexer;
-	switch (true)
+	switch
 	{
 	case @ok(@try(new_lexer, self.decl.parse(lexer))):
 		self.type = DECLARATION;
@@ -21,6 +21,8 @@ fn Lexer? AstNode.parse(&self, Lexer lexer)
 		self.type = EXPRESSION;
 		self.range.end = new_lexer.position();
 		return new_lexer;
-	default: return INCOMPATIBLE?;
+	default:
+		log::debug("Failed to parse AST node");
+		return INCOMPATIBLE?;
 	}
 }

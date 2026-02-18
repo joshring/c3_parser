@@ -4,12 +4,16 @@ import c3::lexer;
 
 fn Lexer? AstNodeExpr.parse(&self, Lexer lexer)
 {
-	if (try new_lexer = self.parse_type_ident(lexer))
+	Lexer new_lexer;
+	switch
 	{
+	case @ok(@try(new_lexer, self.parse_type_ident(lexer))):
 		self.type = AstNodeExprType.TYPE_IDENT;
 		return new_lexer;
+	default:
+		log::debug("Failed to parse expr");
+		return INCOMPATIBLE?;
 	}
-	return INCOMPATIBLE?;
 }
 
 const TokenType[] AST_TYPE_IDENT_TOKENS @local = {
@@ -25,8 +29,17 @@ const TokenType[] AST_TYPE_IDENT_TOKENS @local = {
 *>
 fn Lexer? AstNodeExpr.parse_type_ident(&self, Lexer lexer)
 {
-	Token token = lexer.next() ?? INCOMPATIBLE?!;
-	if (!array::contains(AST_TYPE_IDENT_TOKENS, token.type)) return INCOMPATIBLE?;
+	Token token @noinit;
+	if (!@ok(@try(token, lexer.next())))
+	{
+		log::debug("Lexer next() failed");
+		return INCOMPATIBLE?!;
+	}
+	if (!array::contains(AST_TYPE_IDENT_TOKENS, token.type))
+	{
+		log::debug("Token not recognized as type ident: %s", token);
+		return INCOMPATIBLE?;
+	}
 	self.type_ident.type.start = token.position();
 	self.type_ident.type.end = token.position_end();
 	return lexer;

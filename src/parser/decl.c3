@@ -4,26 +4,41 @@ import c3::lexer;
 
 fn Lexer? AstNodeDecl.parse(&self, Lexer lexer)
 {
-	if (try new_lexer = self.parse_module(lexer))
+	Lexer new_lexer;
+	switch
 	{
+	case @ok(@try(new_lexer, self.parse_module(lexer))):
 		self.type = AstNodeDeclType.MODULE;
 		return new_lexer;
-	}
-	else if (try new_lexer = self.parse_function(lexer))
-	{
+	case @ok(@try(new_lexer, self.parse_function(lexer))):
 		self.type = AstNodeDeclType.FUNC;
 		return new_lexer;
+	default:
+		log::debug("Failed to parse decl");
+		return INCOMPATIBLE?;
 	}
-	return INCOMPATIBLE?;
 }
 <*
 	TODO: parse attributes, generic syntax
 *>
 fn Lexer? AstNodeDecl.parse_module(&self, Lexer lexer)
 {
-	Token token = lexer.next() ?? INCOMPATIBLE?!;
-	if (token.type != TokenType.MODULE) return INCOMPATIBLE?;
-	token = lexer.next() ?? INCOMPATIBLE?!;
+	Token token @noinit;
+	if (!@ok(@try(token, lexer.next())))
+	{
+		log::debug("Lexer next() failed");
+		return INCOMPATIBLE?!;
+	}
+	if (token.type != TokenType.MODULE)
+	{
+		log::debug("Token isn't module");
+		return INCOMPATIBLE?;
+	}
+	if (!@ok(@try(token, lexer.next())))
+	{
+		log::debug("Lexer next() failed");
+		return INCOMPATIBLE?!;
+	}
 	self.name.start = token.position();
 	Lexer temp_lexer = lexer;
 	while LOOP: (@ok(@try(token, temp_lexer.next())))
@@ -46,12 +61,29 @@ fn Lexer? AstNodeDecl.parse_module(&self, Lexer lexer)
 *>
 fn Lexer? AstNodeDecl.parse_function(&self, Lexer lexer)
 {
-	Token token = lexer.next() ?? INCOMPATIBLE?!;
-	if (token.type != TokenType.FUNC) return INCOMPATIBLE?;
-	token = lexer.next() ?? INCOMPATIBLE?!;
+	Token token @noinit;
+	if (!@ok(@try(token, lexer.next())))
+	{
+		log::debug("Lexer next() failed");
+		return INCOMPATIBLE?!;
+	}
+	if (token.type != TokenType.FUNC)
+	{
+		log::debug("Token isn't func");
+		return INCOMPATIBLE?;
+	}
+	if (!@ok(@try(token, lexer.next())))
+	{
+		log::debug("Lexer next() failed");
+		return INCOMPATIBLE?!;
+	}
 	self.func.ret_type.start = token.position();
 	self.func.ret_type.end = token.position_end();
-	token = lexer.next() ?? INCOMPATIBLE?!;
+	if (!@ok(@try(token, lexer.next())))
+	{
+		log::debug("Lexer next() failed");
+		return INCOMPATIBLE?!;
+	}
 	self.name.start = token.position();
 	self.name.end = token.position_end();
 	Lexer temp_lexer = lexer;
@@ -70,6 +102,7 @@ fn Lexer? AstNodeDecl.parse_function(&self, Lexer lexer)
 		}
 		lexer = temp_lexer;
 	}
-	if (@ok(@try(token, temp_lexer.next())) && token.type == TokenType.EOS) lexer = temp_lexer;
+	if (@ok(@try(token, temp_lexer.next())) &&
+		token.type == TokenType.EOS) lexer = temp_lexer;
 	return lexer;
 }
