@@ -63,12 +63,13 @@ fn Lexer? AstNodeDecl.parse_function(&self, Lexer lexer)
 				self.func.args.start = token.position_end();
 			case RPAREN:
 				self.func.args.end = token.position_end();
+				lexer = temp_lexer;
 				break LOOP;
 			default:
 				break;
 		}
 		lexer = temp_lexer;
 	}
-	if (token.type == TokenType.EOS) lexer = temp_lexer;
+	if (@ok(@try(token, temp_lexer.next())) && token.type == TokenType.EOS) lexer = temp_lexer;
 	return lexer;
 }

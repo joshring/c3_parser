@@ -17,6 +17,10 @@ fn Lexer? AstNode.parse(&self, Lexer lexer)
 		self.type = DECLARATION;
 		self.range.end = new_lexer.position();
 		return new_lexer;
+	case @ok(@try(new_lexer, self.expr.parse(lexer))):
+		self.type = EXPRESSION;
+		self.range.end = new_lexer.position();
+		return new_lexer;
 	default: return INCOMPATIBLE?;
 	}
 }

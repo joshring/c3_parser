@@ -3,12 +3,18 @@ import c3::lexer;
 
 import std::io;
 
-const String TEST_STRING = "module test::new;\nfn void parse (Type type);";
+const String TEST_STRING = `module test::new;
+fn void parse (Type type);
+Type
+`;
 fn int main(String[] args)
 {
+	log::set_priority_all(LogPriority.VERBOSE);
 	Lexer lexer;
 	lexer.init(TEST_STRING);
 	AstNode node;
+	lexer = node.parse(lexer)!!;
+	io::printn(node.to_string(tmem, TEST_STRING)!!);
 	lexer = node.parse(lexer)!!;
 	io::printn(node.to_string(tmem, TEST_STRING)!!);
 	lexer = node.parse(lexer)!!;

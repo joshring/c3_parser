@@ -42,7 +42,7 @@ fn Range{usz}? AstRange.char_range(self, String text) => @pool()
 {
 	if (self.start.ge(self.end)) return RANGE_INVALID?;
 	usz[] newline_indices = array::@indices_of(tmem, text, fn (e,i) => e == '\n');
-	if (self.start.line < newline_indices.len || self.end.line < newline_indices.len)
+	if (self.start.line > newline_indices.len || self.end.line > newline_indices.len)
 	{
 		return RANGE_OOB?;
 	}
@@ -76,6 +76,7 @@ fn usz? AstRange.to_format(&self, Formatter* fmt) @dynamic
 enum AstNodeType
 {
 	DECLARATION,
+	EXPRESSION,
 }
 struct AstNode (Printable)
 {
@@ -84,6 +85,7 @@ struct AstNode (Printable)
 	union
 	{
 		AstNodeDecl decl;
+		AstNodeExpr expr;
 		// more types go here later
 	}
 }
@@ -94,6 +96,8 @@ fn usz? AstNode.to_format(&self, Formatter* fmt) @dynamic
 	{
 	case DECLARATION:
 		return fmt.printf("%s", self.decl);
+	case EXPRESSION:
+		return fmt.printf("%s", self.expr);
 	}
 }
 fn String? AstNode.to_string(self, Allocator alloc, String text)
@@ -102,5 +106,7 @@ fn String? AstNode.to_string(self, Allocator alloc, String text)
 	{
 	case DECLARATION:
 		return self.decl.to_string(alloc, text);
+	case EXPRESSION:
+		return self.expr.to_string(alloc, text);
 	}
 }
