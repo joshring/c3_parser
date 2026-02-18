@@ -9,14 +9,13 @@ fn Lexer? AstNodeDecl.parse(&self, Lexer lexer)
 	{
 	case @ok(@try(new_lexer, self.parse_module(lexer))):
 		self.type = AstNodeDeclType.MODULE;
-		return new_lexer;
 	case @ok(@try(new_lexer, self.parse_function(lexer))):
 		self.type = AstNodeDeclType.FUNC;
-		return new_lexer;
 	default:
 		log::debug("Failed to parse decl");
 		return INCOMPATIBLE?;
 	}
+	return new_lexer;
 }
 <*
 	TODO: parse attributes, generic syntax
@@ -53,7 +52,6 @@ fn Lexer? AstNodeDecl.parse_module(&self, Lexer lexer)
 		}
 		lexer = temp_lexer;
 	}
-	if (token.type == TokenType.EOS) lexer = temp_lexer;
 	return lexer;
 }
 <*
@@ -102,7 +100,5 @@ fn Lexer? AstNodeDecl.parse_function(&self, Lexer lexer)
 		}
 		lexer = temp_lexer;
 	}
-	if (@ok(@try(token, temp_lexer.next())) &&
-		token.type == TokenType.EOS) lexer = temp_lexer;
 	return lexer;
 }

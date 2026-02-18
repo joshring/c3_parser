@@ -13,7 +13,7 @@ fn int main(String[] args)
 	Lexer lexer;
 	lexer.init(TEST_STRING);
 	AstNode node;
-	while (@ok(@try(lexer, node.parse(lexer))))
+	while (@ok(@try(lexer, node.parse(lexer))) || @ok(lexer.next()))
 	{
 		io::printn(node.to_string(tmem, TEST_STRING)!!);
 	}
