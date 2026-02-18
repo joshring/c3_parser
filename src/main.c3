@@ -5,7 +5,7 @@ import std::io;
 
 const String TEST_STRING = `module test::new;
 fn void parse (Type type);
-Type
+Type type;
 `;
 fn int main(String[] args)
 {
@@ -13,11 +13,9 @@ fn int main(String[] args)
 	Lexer lexer;
 	lexer.init(TEST_STRING);
 	AstNode node;
-	lexer = node.parse(lexer)!!;
-	io::printn(node.to_string(tmem, TEST_STRING)!!);
-	lexer = node.parse(lexer)!!;
-	io::printn(node.to_string(tmem, TEST_STRING)!!);
-	lexer = node.parse(lexer)!!;
-	io::printn(node.to_string(tmem, TEST_STRING)!!);
+	while (@ok(@try(lexer, node.parse(lexer))))
+	{
+		io::printn(node.to_string(tmem, TEST_STRING)!!);
+	}
 	return 0;
 }
