@@ -7,22 +7,29 @@ faultdef
 	INCOMPATIBLE,
 ;
 
-fn Lexer? AstNode.parse(&self, Lexer lexer)
+fn AstNode? Lexer.parse_ast(&self)
 {
-	self.range.start = { lexer.ln, lexer.col };
-	Lexer new_lexer;
-	switch
+	Lexer old_lexer = *self;
+	defer catch *self = old_lexer;
+
+	AstNode ast;
+	ast.range.start = { self.ln, self.col };
+	defer ast.range.end = self.position();
+
+	if (try decl = self.parse_decl())
 	{
-	case @ok(@try(new_lexer, self.decl.parse(lexer))):
-		self.type = DECLARATION;
-		self.range.end = new_lexer.position();
-		return new_lexer;
-	case @ok(@try(new_lexer, self.expr.parse(lexer))):
-		self.type = EXPRESSION;
-		self.range.end = new_lexer.position();
-		return new_lexer;
-	default:
+		ast.type = DECLARATION;
+		ast.decl = decl;
+	}
+	else if (try expr = self.parse_expr())
+	{
+		ast.type = EXPRESSION;
+		ast.expr = expr;
+	}
+	else
+	{
 		log::debug("Failed to parse AST node");
 		return INCOMPATIBLE?;
 	}
+	return ast;
 }

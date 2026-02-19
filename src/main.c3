@@ -12,10 +12,16 @@ fn int main(String[] args)
 	log::set_priority_all(LogPriority.VERBOSE);
 	Lexer lexer;
 	lexer.init(TEST_STRING);
-	AstNode node;
-	while (@ok(@try(lexer, node.parse(lexer))) || @ok(lexer.next()))
+	while (true)
 	{
-		io::printn(node.to_string(tmem, TEST_STRING)!!);
+		if (try node = lexer.parse_ast())
+		{
+			io::printn(node.to_string(tmem, TEST_STRING)!!);
+		}
+		else if (catch lexer.next())
+		{
+			break;
+		}
 	}
 	return 0;
 }

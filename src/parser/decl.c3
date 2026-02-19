@@ -2,28 +2,37 @@ module c3_parser::parser;
 import c3_parser::ast;
 import c3::lexer;
 
-fn Lexer? AstNodeDecl.parse(&self, Lexer lexer)
+fn AstNodeDecl? Lexer.parse_decl(&self)
 {
-	Lexer new_lexer;
-	switch
+	Lexer old_lexer = *self;
+	defer catch *self = old_lexer;
+
+	if (try module_decl = self.parse_module())
 	{
-	case @ok(@try(new_lexer, self.parse_module(lexer))):
-		self.type = AstNodeDeclType.MODULE;
-	case @ok(@try(new_lexer, self.parse_function(lexer))):
-		self.type = AstNodeDeclType.FUNC;
-	default:
-		log::debug("Failed to parse decl");
-		return INCOMPATIBLE?;
+		return module_decl;
 	}
-	return new_lexer;
+	else if (try func_decl = self.parse_function())
+	{
+		func_decl.type = AstNodeDeclType.FUNC;
+		return func_decl;
+	}
+	log::debug("Failed to parse decl");
+	return INCOMPATIBLE?;
 }
 <*
 	TODO: parse attributes, generic syntax
 *>
-fn Lexer? AstNodeDecl.parse_module(&self, Lexer lexer)
+fn AstNodeDecl? Lexer.parse_module(&self)
 {
+	Lexer old_lexer = *self;
+	defer catch *self = old_lexer;
+
+	AstNodeDecl decl = {
+		.type = AstNodeDeclType.MODULE,
+	};
+
 	Token token @noinit;
-	if (!@ok(@try(token, lexer.next())))
+	if (!@ok(@try(token, self.next())))
 	{
 		log::debug("Lexer next() failed");
 		return INCOMPATIBLE?!;
@@ -33,34 +42,41 @@ fn Lexer? AstNodeDecl.parse_module(&self, Lexer lexer)
 		log::debug("Token isn't module");
 		return INCOMPATIBLE?;
 	}
-	if (!@ok(@try(token, lexer.next())))
+	if (!@ok(@try(token, self.next())))
 	{
 		log::debug("Lexer next() failed");
 		return INCOMPATIBLE?!;
 	}
-	self.name.start = token.position();
-	Lexer temp_lexer = lexer;
+	decl.name.start = token.position();
+	Lexer temp_lexer = *self;
 	while LOOP: (@ok(@try(token, temp_lexer.next())))
 	{
 		switch (token.type)
 		{
 			case IDENT:
 			case SCOPE:
-				self.name.end = token.position_end();
+				decl.name.end = token.position_end();
 			default:
 				break LOOP;
 		}
-		lexer = temp_lexer;
+		*self = temp_lexer;
 	}
-	return lexer;
+	return decl;
 }
 <*
 	TODO: parse args into list, method, attributes, generic syntax
 *>
-fn Lexer? AstNodeDecl.parse_function(&self, Lexer lexer)
+fn AstNodeDecl? Lexer.parse_function(&self)
 {
+	Lexer old_lexer = *self;
+	defer catch *self = old_lexer;
+
+	AstNodeDecl decl = {
+		.type = AstNodeDeclType.FUNC,
+	};
+
 	Token token @noinit;
-	if (!@ok(@try(token, lexer.next())))
+	if (!@ok(@try(token, self.next())))
 	{
 		log::debug("Lexer next() failed");
 		return INCOMPATIBLE?!;
@@ -70,35 +86,35 @@ fn Lexer? AstNodeDecl.parse_function(&self, Lexer lexer)
 		log::debug("Token isn't func");
 		return INCOMPATIBLE?;
 	}
-	if (!@ok(@try(token, lexer.next())))
+	if (!@ok(@try(token, self.next())))
 	{
 		log::debug("Lexer next() failed");
 		return INCOMPATIBLE?!;
 	}
-	self.func.ret_type.start = token.position();
-	self.func.ret_type.end = token.position_end();
-	if (!@ok(@try(token, lexer.next())))
+	decl.func.ret_type.start = token.position();
+	decl.func.ret_type.end = token.position_end();
+	if (!@ok(@try(token, self.next())))
 	{
 		log::debug("Lexer next() failed");
 		return INCOMPATIBLE?!;
 	}
-	self.name.start = token.position();
-	self.name.end = token.position_end();
-	Lexer temp_lexer = lexer;
+	decl.name.start = token.position();
+	decl.name.end = token.position_end();
+	Lexer temp_lexer = *self;
 	while LOOP: (@ok(@try(token, temp_lexer.next())))
 	{
 		switch (token.type)
 		{
 			case LPAREN:
-				self.func.args.start = token.position_end();
+				decl.func.args.start = token.position_end();
 			case RPAREN:
-				self.func.args.end = token.position_end();
-				lexer = temp_lexer;
+				decl.func.args.end = token.position_end();
+				*self = temp_lexer;
 				break LOOP;
 			default:
 				break;
 		}
-		lexer = temp_lexer;
+		*self = temp_lexer;
 	}
-	return lexer;
+	return decl;
 }

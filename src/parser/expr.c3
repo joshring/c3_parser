@@ -2,26 +2,34 @@ module c3_parser::parser;
 import c3_parser::ast;
 import c3::lexer;
 
-fn Lexer? AstNodeExpr.parse(&self, Lexer lexer)
+fn AstNodeExpr? Lexer.parse_expr(&self)
 {
-	Lexer new_lexer;
-	switch
+	Lexer old_lexer = *self;
+	defer catch *self = old_lexer;
+
+	if (try ident = self.parse_ident())
 	{
-	case @ok(@try(new_lexer, self.parse_ident(lexer))):
-		self.type = AstNodeExprType.IDENT;
-	case @ok(@try(new_lexer, self.parse_type_ident(lexer))):
-		self.type = AstNodeExprType.TYPE_IDENT;
-	default:
-		log::debug("Failed to parse expr");
-		return INCOMPATIBLE?;
+		return ident;
 	}
-	return new_lexer;
+	else if (try type_ident = self.parse_type_ident())
+	{
+		return type_ident;
+	}
+	log::debug("Failed to parse expr");
+	return INCOMPATIBLE?;
 }
 
-fn Lexer? AstNodeExpr.parse_ident(&self, Lexer lexer)
+fn AstNodeExpr? Lexer.parse_ident(&self)
 {
+	Lexer old_lexer = *self;
+	defer catch *self = old_lexer;
+
+	AstNodeExpr expr = {
+		.type = AstNodeExprType.IDENT,
+	};
+
 	Token token @noinit;
-	if (!@ok(@try(token, lexer.next())))
+	if (!@ok(@try(token, self.next())))
 	{
 		log::debug("Lexer next() failed");
 		return INCOMPATIBLE?!;
@@ -31,9 +39,9 @@ fn Lexer? AstNodeExpr.parse_ident(&self, Lexer lexer)
 		log::debug("Token not recognized as type ident: %s", token);
 		return INCOMPATIBLE?;
 	}
-	self.ident.name.start = token.position();
-	self.ident.name.end = token.position_end();
-	return lexer;
+	expr.ident.name.start = token.position();
+	expr.ident.name.end = token.position_end();
+	return expr;
 }
 const TokenType[] AST_TYPE_IDENT_TOKENS @local = {
 	VOID, BOOL, CHAR, ICHAR, SHORT, USHORT, INT, UINT, LONG, ULONG, INT128,
@@ -46,10 +54,17 @@ const TokenType[] AST_TYPE_IDENT_TOKENS @local = {
 	Probably not a problem but might want to revisit.
 	TODO: Parse generic syntax, requires parsing for constants
 *>
-fn Lexer? AstNodeExpr.parse_type_ident(&self, Lexer lexer)
+fn AstNodeExpr? Lexer.parse_type_ident(&self)
 {
+	Lexer old_lexer = *self;
+	defer catch *self = old_lexer;
+
+	AstNodeExpr expr = {
+		.type = AstNodeExprType.TYPE_IDENT,
+	};
+
 	Token token @noinit;
-	if (!@ok(@try(token, lexer.next())))
+	if (!@ok(@try(token, self.next())))
 	{
 		log::debug("Lexer next() failed");
 		return INCOMPATIBLE?!;
@@ -59,7 +74,7 @@ fn Lexer? AstNodeExpr.parse_type_ident(&self, Lexer lexer)
 		log::debug("Token not recognized as type ident: %s", token);
 		return INCOMPATIBLE?;
 	}
-	self.type_ident.type.start = token.position();
-	self.type_ident.type.end = token.position_end();
-	return lexer;
+	expr.type_ident.type.start = token.position();
+	expr.type_ident.type.end = token.position_end();
+	return expr;
 }
