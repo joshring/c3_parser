@@ -2,20 +2,40 @@ module c3_parser;
 import c3::lexer;
 
 import std::io;
+import c3_parser::parser;
 
-const String TEST_STRING = `module test::new;
-fn void parse (Type type);
-Type type;
-`;
+char[*] test_file = $embed("../test/test_file.c3");
+
 fn int main(String[] args)
 {
+	String src = (String)&test_file;
+
 	log::set_priority_all(LogPriority.VERBOSE);
+
+	DynamicArenaAllocator alloc = (DynamicArenaAllocator){};
+	alloc.init(mem, 1000);
+	defer alloc.free();
+
 	Lexer lexer;
-	lexer.init(TEST_STRING);
-	AstNode node;
-	while (@ok(@try(lexer, node.parse(lexer))) || @ok(lexer.next()))
+	lexer.init(src);
+
+	Parser parser = (Parser){ 
+		.lexer = lexer,
+		.alloc = &alloc,
+	};
+
+	parser::init(&parser);
+	defer parser::free(&parser);
+
+	if (catch err = parser::parse(&parser))
 	{
-		io::printn(node.to_string(tmem, TEST_STRING)!!);
+		log::debug("%s", err);
 	}
+
+	foreach (decl : parser.decls)
+	{
+		log::debug("Decl -> %s", decl.type);
+	}
+
 	return 0;
 }

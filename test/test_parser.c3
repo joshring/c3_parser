@@ -1,47 +1,32 @@
 module test @test;
 
+import c3_parser;
 import std::io;
-import std::collections::list;
-
 import c3::lexer;
-import parser;
-import ast;
 
+char[*] test_file = $embed("test_file.c3");
+
+// WIP output with: 	c3c test --test-show-output
 fn void test_parser()
 {
 	String src = (String)&test_file;
 
-	List{ Token } tokens;
-	tokens.init(mem, 1000);
-	defer tokens.free();
+	log::set_priority_all(LogPriority.VERBOSE);
+
+	DynamicArenaAllocator alloc = (DynamicArenaAllocator){};
+	alloc.init(mem, AstNode.sizeof * 1000);
+	defer alloc.free();
 
 	Lexer lexer;
 	lexer.init(src);
-	while (try tok = lexer.next())
+
+	Parser parser = (Parser){ 
+		.lexer = lexer,
+		.alloc = &alloc,
+	};
+
+	if (catch err = parser::parse(&parser))
 	{
-		tokens.push(tok);
-	}
-
-	Ast ast;
-	ast::ast_init(&ast);
-	defer ast::ast_free(&ast);
-
-	Parser parser;
-	parser.ast = &ast;
-	parser.tokens = tokens.array_view();
-	parser.count = (uint)tokens.len();
-	parser.pos = 0;
-
-	for (uint? idx = 0; @catch(idx) != parser::NO_MORE_TOKENS; idx = parser::parse_decl(&parser))
-	{
-		if (catch err = idx)
-		{
-			io::printn(err);
-		}
-		else
-		{
-			io::printn(idx);
-		}
-		io::printn();
+		log::debug("%s", err);
 	}
 }

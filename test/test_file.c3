@@ -1,25 +1,10 @@
-module something::something;
+module test::new;
 
 import std::io;
 
-struct Foo 
+fn void parse(uint value)
 {
-	float a;
-	int    b;
-
-	uint	c;
+	io::printn("foo");
 }
 
-fn void? some_foo(int a, float b, char c)
-{
-	int* local_var = &a;
-
-	*local_var = 10;
-
-	io::printn("foooo");
-}
-
-fn void? some_some_foo(String src)
-{
-
-}
+void* type;

@@ -2,47 +2,28 @@ module c3_parser::ast;
 
 import std::io;
 
-enum AstNodeExprType
+enum ExprType
 {
 	IDENT,
 	TYPE_IDENT,
 }
-struct AstNodeExpr (Printable)
+
+struct Expr
 {
-	AstNodeExprType type;
+	ExprType type;
 	union
 	{
-		AstNodeExprIdent ident;
-		AstNodeExprTypeIdent type_ident;
+		ExprIdent ident;
+		ExprTypeIdent type_ident;
 	}
 }
 
-fn usz? AstNodeExpr.to_format(&self, Formatter* fmt) @dynamic
-{
-	switch (self.type)
-	{
-	case IDENT:
-		return fmt.printf("{ <IDENT> type: %s }", self.ident.name);
-	case TYPE_IDENT:
-		return fmt.printf("{ <TYPE_IDENT> type: %s }", self.type_ident.type);
-	}
-}
-fn String? AstNodeExpr.to_string(self, Allocator alloc, String text)
-{
-	switch (self.type)
-	{
-	case IDENT:
-		return string::format(alloc, "(expr_ident %s)", self.ident.name.slice_text(text));
-	case TYPE_IDENT:
-		return string::format(alloc, "(expr_type_ident %s)", self.type_ident.type.slice_text(text));
-	}
-}
-
-struct AstNodeExprIdent
+struct ExprIdent
 {
 	AstRange name;
 }
-struct AstNodeExprTypeIdent
+
+struct ExprTypeIdent
 {
 	// range for entire type ("MyType"), even for generics ("HashSet{int}")
 	AstRange type;

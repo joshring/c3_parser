@@ -3,7 +3,6 @@ module test @test;
 import std::io;
 import c3::lexer;
 
-char[*] test_file = $embed("test_file.c3");
 
 // WIP output with: 	c3c test --test-show-output
 fn void test_example()
