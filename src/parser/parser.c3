@@ -4,6 +4,7 @@ import c3::lexer;
 import c3_parser::ast;
 import std::collections::list;
 import handle_pool;
+import handle;
 
 faultdef 
 	CONTRACT_NOT_ALLOWED,

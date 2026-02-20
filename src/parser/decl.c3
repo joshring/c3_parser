@@ -18,7 +18,7 @@ fn Decl*? parse_function(Parser* parser)
 	advance(parser)!;
 
 	DeclHandle handle = decl_alloc(parser);
-	Decl* decl = parser.decls.get(handle);
+	Decl* decl = parser.decls.get_ref(handle);
 	assert(decl != null);
 	
 	decl.type = DeclType.FUNC;

@@ -32,11 +32,10 @@ fn int main(String[] args)
 		log::debug("%s", err);
 	}
 
-	foreach (decl : parser.decls)
+	parser.decls.@each(; Decl* decl)
 	{
 		log::debug("Decl -> %s", decl.type);
-		
-	}
+	};
 
 	return 0;
 }

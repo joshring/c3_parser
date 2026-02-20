@@ -19,6 +19,7 @@ import handle;
 
 struct HandlePool
 {
+	// the first is a placeholder so dont iterate over it
 	List{ Slot } slots;
 	List{ uint } free_list;
 }
@@ -35,7 +36,6 @@ fn void HandlePool.init(&self, Allocator alloc = mem)
 	self.slots.init(alloc);
 	self.free_list.init(alloc);
 
-	// index 0 is reserved as invalid-index
 	self.slots.push((Slot){});
 }
 
@@ -82,7 +82,7 @@ fn void HandlePool.destroy(&self, Handle handle)
 	self.free_list.push(handle.index);
 }
 
-fn Type* HandlePool.get(&self, Handle handle)
+fn Type* HandlePool.get_ref(&self, Handle handle)
 {
 	if (!self.is_valid(handle)) return null;
 	return &self.slots[handle.index].value;
@@ -97,7 +97,16 @@ fn bool HandlePool.is_valid(&self, Handle handle)
 	return slot.alive && slot.generation == handle.generation;
 }
 
-fn bool Handle.eq(&self, Handle other) @operator(==)
+fn usz HandlePool.len(&self) @operator(len)
 {
-	return self.index == other.index && self.generation == other.generation;
+    return self.slots.len();
+}
+
+macro HandlePool.@each(pool; @body(item))
+{
+	for (uint i = 1; i < pool.len(); i++)
+	{
+		Slot* slot = &pool.slots[i];
+		@body(&slot.value);
+	}
 }
