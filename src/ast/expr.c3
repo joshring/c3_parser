@@ -2,6 +2,8 @@ module c3_parser::ast;
 
 import std::io;
 
+typedef ExprHandle = handle::Handle;
+
 enum ExprType
 {
 	IDENT,

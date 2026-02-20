@@ -1,6 +1,9 @@
 module c3_parser::ast;
 
 import std::io;
+import handle;
+
+typedef DeclHandle = handle::Handle;
 
 enum DeclType
 {

@@ -35,6 +35,7 @@ fn int main(String[] args)
 	foreach (decl : parser.decls)
 	{
 		log::debug("Decl -> %s", decl.type);
+		
 	}
 
 	return 0;

@@ -3,6 +3,7 @@ module c3_parser::parser;
 import c3::lexer;
 import c3_parser::ast;
 import std::collections::list;
+import handle_pool;
 
 faultdef 
 	CONTRACT_NOT_ALLOWED,
@@ -11,9 +12,9 @@ faultdef
 
 struct Parser
 {
-	List{ Decl } decls;
-	List{ Expr } exprs;
-	List{ Stmt } stmts;
+	HandlePool{ Decl } decls;
+	HandlePool{ Expr } exprs;
+	HandlePool{ Stmt } stmts;
 
 	Lexer lexer;
 	Token token;

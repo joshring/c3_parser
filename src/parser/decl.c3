@@ -2,10 +2,9 @@ module c3_parser::parser;
 import c3_parser::ast;
 import c3::lexer;
 
-fn Decl* decl_alloc(Parser* parser)
+fn DeclHandle decl_alloc(Parser* parser)
 {
-	parser.decls.push((Decl){});
-	return &parser.decls[parser.decls.len() - 1];
+	return parser.decls.create();
 }
 
 fn void? parse_module(Parser* parser)
@@ -18,7 +17,9 @@ fn Decl*? parse_function(Parser* parser)
 	assert(parser.token.type == TokenType.FUNC);
 	advance(parser)!;
 
-	Decl* decl = decl_alloc(parser);
+	DeclHandle handle = decl_alloc(parser);
+	Decl* decl = parser.decls.get(handle);
+	assert(decl != null);
 	
 	decl.type = DeclType.FUNC;
 	
