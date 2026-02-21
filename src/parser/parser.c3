@@ -67,11 +67,8 @@ fn void? parse(Parser* parser)
 
 	while (!token_is(parser, TokenType.EOF))
 	{
-		Decl*? decl = parse_top_level_statement(parser);
-		if (catch advance(parser))
-		{
-			return;
-		}
+		DeclHandle? decl = parse_top_level_statement(parser);
+		advance(parser)!;
 
 		if (catch decl)
 		{
@@ -81,9 +78,9 @@ fn void? parse(Parser* parser)
 	}
 }
 
-fn Decl*? parse_top_level_statement(Parser* parser)
+fn DeclHandle? parse_top_level_statement(Parser* parser)
 {
-	Decl* decl;
+	DeclHandle decl;
 
 	TokenType type = parser.token.type;
 	bool attach_contracts = false;
@@ -103,5 +100,5 @@ fn Decl*? parse_top_level_statement(Parser* parser)
 		break;
 	}
 
-	return null;
+	return (DeclHandle){};
 }

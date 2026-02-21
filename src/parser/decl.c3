@@ -12,7 +12,7 @@ fn void? parse_module(Parser* parser)
 	
 }
 
-fn Decl*? parse_function(Parser* parser)
+fn DeclHandle? parse_function(Parser* parser)
 {
 	assert(parser.token.type == TokenType.FUNC);
 	advance(parser)!;
@@ -25,5 +25,5 @@ fn Decl*? parse_function(Parser* parser)
 	
 
 
-	return decl;
+	return handle;
 }
