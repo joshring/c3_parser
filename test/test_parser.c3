@@ -13,20 +13,25 @@ fn void test_parser()
 
 	log::set_priority_all(LogPriority.VERBOSE);
 
-	DynamicArenaAllocator alloc = (DynamicArenaAllocator){};
-	alloc.init(mem, AstNode.sizeof * 1000);
-	defer alloc.free();
-
 	Lexer lexer;
 	lexer.init(src);
 
 	Parser parser = (Parser){ 
 		.lexer = lexer,
-		.alloc = &alloc,
+		.alloc = mem,
 	};
+
+	parser::init(&parser);
+	defer parser::free(&parser);
 
 	if (catch err = parser::parse(&parser))
 	{
 		log::debug("%s", err);
 	}
+
+	parser.decls.@each(; Decl* decl)
+	{
+		log::debug("Decl -> %s", decl.type);
+	};
+
 }

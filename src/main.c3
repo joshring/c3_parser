@@ -12,16 +12,12 @@ fn int main(String[] args)
 
 	log::set_priority_all(LogPriority.VERBOSE);
 
-	DynamicArenaAllocator alloc = (DynamicArenaAllocator){};
-	alloc.init(mem, 1000);
-	defer alloc.free();
-
 	Lexer lexer;
 	lexer.init(src);
 
 	Parser parser = (Parser){ 
 		.lexer = lexer,
-		.alloc = &alloc,
+		.alloc = mem,
 	};
 
 	parser::init(&parser);

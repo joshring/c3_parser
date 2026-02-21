@@ -36,6 +36,7 @@ fn void HandlePool.init(&self, Allocator alloc = mem)
 	self.slots.init(alloc);
 	self.free_list.init(alloc);
 
+	// the first item of the array represents a invalid index
 	self.slots.push((Slot){});
 }
 
