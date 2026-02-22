@@ -5,9 +5,11 @@ import c3_parser::ast;
 import std::collections::list;
 import handle_pool;
 import handle;
+import std::io;
 
 faultdef 
 	CONTRACT_NOT_ALLOWED,
+	UNEXPECTED_TOKEN,
 	PARSER_EOF
 ;
 
@@ -51,14 +53,28 @@ fn void? advance(Parser* parser)
 	parser.token = parser.lexer.next()!;
 }
 
+fn void? expect(Parser* parser, TokenType type)
+{
+	if (!token_is(parser, type))
+	{
+		return UNEXPECTED_TOKEN~;
+	}
+}
+
+fn bool? consume(Parser* parser, TokenType type)
+{
+	if (token_is(parser, type))
+	{
+		advance(parser)!;
+		return true;
+	}
+
+	return false;
+}
+
 fn void? parse(Parser* parser)
 {
 	// prime
-	if (catch err = advance(parser))
-	{
-		log::debug("couldn't advance");
-		return err~;
-	}
 	if (catch err = advance(parser))
 	{
 		log::debug("couldn't advance");
@@ -70,7 +86,7 @@ fn void? parse(Parser* parser)
 		DeclHandle? decl = parse_top_level_statement(parser);
 		advance(parser)!;
 
-		if (catch decl)
+		if (catch err = decl)
 		{
 			continue;
 		}

@@ -30,7 +30,12 @@ fn int main(String[] args)
 
 	parser.decls.@each(; Decl* decl)
 	{
-		log::debug("Decl -> %s", decl.type);
+		log::debug(decl.to_string(tmem, src)!!);
+	};
+
+	parser.stmts.@each(; Stmt* stmt)
+	{
+		log::debug(stmt.to_string(tmem, src)!!);
 	};
 
 	return 0;
