@@ -20,7 +20,7 @@ struct Decl (Printable)
 
 	union
 	{
-		DeclFunc func;
+		FuncDecl func;
 		// more types go here later
 	}
 }
@@ -55,7 +55,7 @@ fn String? Decl.to_string(self, Allocator alloc, String text)
 	case IMPORT:
 		return string::format(alloc, "(decl_import)");
 	case FUNC:
-		return string::format(alloc, "(<DeclFunc> %s %s (%s))",
+		return string::format(alloc, "(<FuncDecl> %s %s (%s))",
 			self.name.slice_text(text),
 			self.func.ret_type.slice_text(text),
 			self.func.args.slice_text(text),
@@ -63,11 +63,16 @@ fn String? Decl.to_string(self, Allocator alloc, String text)
 	}
 }
 
-struct DeclFunc
+struct FuncDecl
 {
 	AstRange ret_type;
 	// range of whole args definition of function (includes parentheses)
 	// TODO: turn this into a slice of AST node variables
 	AstRange args;
-	StmtHandle body;
+	StmtHandle block;
+}
+
+struct VarDecl 
+{
+	AstRange name;
 }

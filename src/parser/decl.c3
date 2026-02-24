@@ -66,7 +66,7 @@ fn DeclHandle? parse_function(Parser* parser)
 
 	if (token_is(parser, TokenType.LBRACE))
 	{
-		decl.func.body = parse_body(parser)!;
+		decl.func.block = parse_block(parser)!;
 	}
 
 	return handle;

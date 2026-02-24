@@ -8,7 +8,7 @@ fn StmtHandle stmt_alloc(Parser* parser)
 	return parser.stmts.create();
 }
 
-fn StmtHandle? parse_body(Parser* parser)
+fn StmtHandle? parse_block(Parser* parser)
 {
  	if (catch expect(parser, TokenType.LBRACE))
 	{
@@ -20,15 +20,17 @@ fn StmtHandle? parse_body(Parser* parser)
 	StmtHandle handle = stmt_alloc(parser);
 	Stmt* stmt = parser.stmts.get_ref(handle);
 
-	stmt.body.body.start = parser.token.position();
+	stmt.block.body.start = parser.token.position();
 
-	do 
+	Lexer temp_lexer = parser.lexer;
+	Token token @noinit;
+	do
 	{
-		advance(parser)!;
+		token = temp_lexer.next()!;
 	} 
-	while (parser.token.type != TokenType.RBRACE);
+	while (token.type != TokenType.RBRACE);
 
-	stmt.body.body.end = parser.token.position_end();
+	stmt.block.body.end = token.position_end();
 
 	return handle;
 }

@@ -7,7 +7,7 @@ alias StmtHandle = handle::Handle;
 
 enum StmtType (Printable)
 {
-	BODY, // the body of a function
+	BLOCK, // the body of a function
 	RETURN,
 }
 
@@ -17,8 +17,8 @@ struct Stmt
 
 	union
 	{
-		StmtBody body;
-		StmtReturn return_stmt;
+		BlockStmt block;
+		ReturnStmt return_stmt;
 	}
 }
 
@@ -26,9 +26,9 @@ fn usz? Stmt.to_format(&self, Formatter* fmt) @dynamic
 {
 	switch (self.type)
 	{
-	case BODY:
-		return fmt.printf("{ <BODY> : %s }",
-			self.body.body,
+	case BLOCK:
+		return fmt.printf("{ <BLOCK> : %s }",
+			self.block.body,
 		);
 	case RETURN: 
 		return fmt.printf("{ <RETURN> }");
@@ -39,10 +39,10 @@ fn String? Stmt.to_string(self, Allocator alloc, String text)
 {
 	switch (self.type)
 	{
-	case BODY:
-		return string::format(alloc, "(StmtBody %s)", self.body.body.slice_text(text));
+	case BLOCK:
+		return string::format(alloc, "(BlockStmt %s)", self.block.body.slice_text(text));
 	case RETURN:
-		return string::format(alloc, "(decl_import)");
+		return string::format(alloc, "(ReturnStmt)");
 	}
 }
 
@@ -52,12 +52,12 @@ fn String? Stmt.to_string(self, Allocator alloc, String text)
 	body.start -> '{' 
 	body.end -> '}'
 *>
-struct StmtBody
+struct BlockStmt
 {
 	AstRange body;
 }
 
-struct StmtReturn
+struct ReturnStmt
 {
 	AstRange ret;
 }
