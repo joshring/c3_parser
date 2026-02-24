@@ -1,9 +1,6 @@
 module c3_parser::ast;
 
 import std::io;
-import handle;
-
-alias StmtHandle = handle::Handle;
 
 enum StmtType (Printable)
 {

@@ -3,8 +3,6 @@ module c3_parser::parser;
 import c3::lexer;
 import c3_parser::ast;
 import std::collections::list;
-import handle_pool;
-import handle;
 import std::io;
 
 faultdef 
@@ -15,27 +13,21 @@ faultdef
 
 struct Parser
 {
-	HandlePool{ Decl } decls;
-	HandlePool{ Expr } exprs;
-	HandlePool{ Stmt } stmts;
-
 	Lexer lexer;
+	Ast* ast;
 	Token token;
-	Allocator alloc;
 }
 
 fn void init(Parser* parser)
 {
-	parser.decls.init(parser.alloc);
-	parser.exprs.init(parser.alloc);
-	parser.stmts.init(parser.alloc);
+	parser.ast = mem::tnew(Ast);
+
+	parser.ast.decls.init(tmem);
 }
 
 fn void free(Parser* parser)
 {
-	parser.decls.free();
-	parser.exprs.free();
-	parser.stmts.free();
+
 }
 
 fn bool token_is(Parser* parser, TokenType type) @inline 
@@ -83,20 +75,24 @@ fn void? parse(Parser* parser)
 
 	while (!token_is(parser, TokenType.EOF))
 	{
-		DeclHandle? decl = parse_top_level_statement(parser);
+		Decl*? decl = parse_top_level_statement(parser);
 		advance(parser)!;
 
 		if (catch err = decl)
 		{
+			log::debug("%s", err);
 			continue;
 		}
 
+		if (decl == null) continue;
+		log::debug("added");
+		parser.ast.decls.push(decl);
 	}
 }
 
-fn DeclHandle? parse_top_level_statement(Parser* parser)
+fn Decl*? parse_top_level_statement(Parser* parser)
 {
-	DeclHandle decl;
+	Decl* decl;
 
 	TokenType type = parser.token.type;
 	bool attach_contracts = false;
@@ -116,5 +112,5 @@ fn DeclHandle? parse_top_level_statement(Parser* parser)
 		break;
 	}
 
-	return (DeclHandle){};
+	return decl;
 }

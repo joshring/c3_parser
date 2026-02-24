@@ -3,12 +3,7 @@ module c3_parser::parser;
 import c3_parser::ast;
 import c3::lexer;
 
-fn StmtHandle stmt_alloc(Parser* parser)
-{
-	return parser.stmts.create();
-}
-
-fn StmtHandle? parse_block(Parser* parser)
+fn Stmt*? parse_block(Parser* parser)
 {
  	if (catch expect(parser, TokenType.LBRACE))
 	{
@@ -17,10 +12,12 @@ fn StmtHandle? parse_block(Parser* parser)
 		return UNEXPECTED_TOKEN~;
 	}
 
-	StmtHandle handle = stmt_alloc(parser);
-	Stmt* stmt = parser.stmts.get_ref(handle);
+	Stmt* stmt = mem::tnew(Stmt);
 
 	stmt.block.body.start = parser.token.position();
+
+	// advance aw from '{'
+	advance(parser)!;
 
 	Lexer temp_lexer = parser.lexer;
 	Token token @noinit;
@@ -32,6 +29,6 @@ fn StmtHandle? parse_block(Parser* parser)
 
 	stmt.block.body.end = token.position_end();
 
-	return handle;
+	return stmt;
 }
 

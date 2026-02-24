@@ -3,6 +3,12 @@ import c3::lexer;
 
 import std::io;
 import std::collections::range;
+import std::collections::list;
+
+faultdef
+	RANGE_OOB,
+	RANGE_INVALID
+;
 
 struct AstPosition (Printable)
 {
@@ -76,7 +82,14 @@ struct SourceSpan
 	AstRange range;
 }
 
-faultdef
-	RANGE_OOB,
-	RANGE_INVALID,
-;
+enum NodeKind 
+{
+	DECLERATION,
+	STATEMENT,
+	EXPRESSION,
+}
+
+struct Ast 
+{
+	List{ Decl* } decls;
+}

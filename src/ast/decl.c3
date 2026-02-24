@@ -1,9 +1,6 @@
 module c3_parser::ast;
 
 import std::io;
-import handle;
-
-alias DeclHandle = handle::Handle;
 
 enum DeclType
 {
@@ -69,7 +66,7 @@ struct FuncDecl
 	// range of whole args definition of function (includes parentheses)
 	// TODO: turn this into a slice of AST node variables
 	AstRange args;
-	StmtHandle block;
+	Stmt* block;
 }
 
 struct VarDecl 

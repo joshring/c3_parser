@@ -17,7 +17,6 @@ fn int main(String[] args)
 
 	Parser parser = (Parser){ 
 		.lexer = lexer,
-		.alloc = mem,
 	};
 
 	parser::init(&parser);
@@ -25,18 +24,13 @@ fn int main(String[] args)
 
 	if (catch err = parser::parse(&parser))
 	{
-		log::debug("%s", err);
+		log::error("%s", err);
 	}
 
-	parser.decls.@each(; Decl* decl)
+	foreach (Decl* decl : parser.ast.decls)
 	{
 		log::debug(decl.to_string(tmem, src)!!);
-	};
-
-	parser.stmts.@each(; Stmt* stmt)
-	{
-		log::debug(stmt.to_string(tmem, src)!!);
-	};
+	}
 
 	return 0;
 }
