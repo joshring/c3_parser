@@ -99,6 +99,8 @@ fn Decl*? parse_top_level_statement(Parser* parser)
 	case TokenType.MODULE:
 		decl = parse_module(parser)!;
 		break;
+	case TokenType.IMPORT: 
+		decl = parse_import(parser)!;
 	default:
 		break;
 	}

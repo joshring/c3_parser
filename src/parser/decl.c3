@@ -36,6 +36,31 @@ fn Decl*? parse_module(Parser* parser)
 	return decl;
 }
 
+fn Decl*? parse_import(Parser* parser)
+{
+	if (!consume(parser, TokenType.IMPORT)!)
+	{
+		log::error("expected 'import");
+		return UNEXPECTED_TOKEN~;
+	}
+
+	Decl* decl = mem::tnew(Decl);
+	decl.type = DeclType.IMPORT;
+
+	decl.name.start = parser.token.position();
+
+	do 
+	{
+		advance(parser)!;
+	} 
+	while (token_is(parser, TokenType.IDENT) || token_is(parser, TokenType.SCOPE));
+
+	decl.name.end = parser.token.position();
+	decl.name.end.col -= 1;
+
+	return decl;
+}
+
 fn Decl*? parse_function(Parser* parser)
 {
 	if (!consume(parser, TokenType.FUNC)!)
