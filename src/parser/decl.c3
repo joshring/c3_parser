@@ -2,9 +2,38 @@ module c3_parser::parser;
 import c3_parser::ast;
 import c3::lexer;
 
-fn void? parse_module(Parser* parser)
+fn Decl*? parse_module(Parser* parser)
 {
-	
+	if (!consume(parser, TokenType.MODULE)!)
+	{
+		log::error("expected 'module'");
+		return UNEXPECTED_TOKEN~;
+	}
+
+	Decl* decl = mem::tnew(Decl);
+	decl.type = DeclType.MODULE;
+
+	if (!token_is(parser, TokenType.IDENT))
+	{
+		log::error("expected 'Identifier");
+		return UNEXPECTED_TOKEN~;
+	}
+
+	decl.mod.name.start = parser.token.position();
+
+	//TODO: better way?
+	do 
+	{
+		advance(parser)!;
+	} 
+	while (token_is(parser, TokenType.IDENT) || token_is(parser, TokenType.SCOPE));
+
+	decl.mod.name.end = parser.token.position();
+	decl.mod.name.end.col -= 1;
+
+	expect(parser, TokenType.EOS)!;
+
+	return decl;
 }
 
 fn Decl*? parse_function(Parser* parser)

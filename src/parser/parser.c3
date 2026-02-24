@@ -67,11 +67,7 @@ fn bool? consume(Parser* parser, TokenType type)
 fn void? parse(Parser* parser)
 {
 	// prime
-	if (catch err = advance(parser))
-	{
-		log::debug("couldn't advance");
-		return err~;
-	}
+	advance(parser)!;
 
 	while (!token_is(parser, TokenType.EOF))
 	{
@@ -80,12 +76,10 @@ fn void? parse(Parser* parser)
 
 		if (catch err = decl)
 		{
-			log::debug("%s", err);
 			continue;
 		}
 
 		if (decl == null) continue;
-		log::debug("added");
 		parser.ast.decls.push(decl);
 	}
 }
@@ -103,10 +97,7 @@ fn Decl*? parse_top_level_statement(Parser* parser)
 		decl = parse_function(parser)!;
 		break;
 	case TokenType.MODULE:
-		if (try advance(parser))
-		{
-			
-		}	
+		decl = parse_module(parser)!;
 		break;
 	default:
 		break;
