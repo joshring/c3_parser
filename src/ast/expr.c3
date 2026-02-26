@@ -4,7 +4,6 @@ import std::io;
 
 enum ExprType
 {
-	IDENT,
 	TYPE_IDENT,
 }
 
@@ -13,14 +12,8 @@ struct Expr
 	ExprType type;
 	union
 	{
-		ExprIdent ident;
 		ExprTypeIdent type_ident;
 	}
-}
-
-struct ExprIdent
-{
-	AstRange name;
 }
 
 struct ExprTypeIdent

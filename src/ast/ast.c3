@@ -89,6 +89,17 @@ enum NodeKind
 	EXPRESSION,
 }
 
+struct Ident 
+{
+	AstRange range;
+	String name;
+}
+
+fn String Ident.get_string(&self) @inline
+{
+	return self.name;
+}
+
 struct Ast 
 {
 	List{ Decl* } decls;

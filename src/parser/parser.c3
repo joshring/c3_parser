@@ -2,32 +2,29 @@ module c3_parser::parser;
 
 import c3::lexer;
 import c3_parser::ast;
+import c3_parser::mod;
+
 import std::collections::list;
 import std::io;
 
 faultdef 
 	CONTRACT_NOT_ALLOWED,
 	UNEXPECTED_TOKEN,
+	FOUND_MODULE,
 	PARSER_EOF
 ;
 
 struct Parser
 {
 	Lexer lexer;
-	Ast* ast;
+	ModuleSection* section;
+	String src;
 	Token token;
 }
 
-fn void init(Parser* parser)
+fn bool Parser.eof(&self) @inline 
 {
-	parser.ast = mem::tnew(Ast);
-
-	parser.ast.decls.init(tmem);
-}
-
-fn void free(Parser* parser)
-{
-
+	return token_is(self, TokenType.EOF);
 }
 
 fn bool token_is(Parser* parser, TokenType type) @inline 
@@ -37,7 +34,7 @@ fn bool token_is(Parser* parser, TokenType type) @inline
 
 fn void? advance(Parser* parser)
 {
-	if (token_is(parser, TokenType.EOF))
+	if (parser.eof())
 	{
 		return PARSER_EOF~;
 	}
@@ -64,23 +61,43 @@ fn bool? consume(Parser* parser, TokenType type)
 	return false;
 }
 
+fn Ident Parser.ident(&self, AstPosition start, AstPosition end)
+{
+	Ident ident = (Ident){
+		.range.start = start,
+		.range.end = end,
+	};
+
+	if (!@ok(@try(ident.name, ident.range.slice_text(self.src))))
+	{
+		ident.name = "";
+	}
+
+	return ident;
+}
+
 fn void? parse(Parser* parser)
 {
-	// prime
-	advance(parser)!;
-
-	while (!token_is(parser, TokenType.EOF))
+	while (!parser.eof())
 	{
 		Decl*? decl = parse_top_level_statement(parser);
-		advance(parser)!;
 
 		if (catch err = decl)
 		{
-			continue;
+			if (err == FOUND_MODULE)
+			{
+				return FOUND_MODULE~;
+			}
+			else
+			{
+				continue;
+			}
 		}
 
+		advance(parser)!;
+
 		if (decl == null) continue;
-		parser.ast.decls.push(decl);
+		(void)parser.section.ast.decls.push(decl);
 	}
 }
 
@@ -97,8 +114,7 @@ fn Decl*? parse_top_level_statement(Parser* parser)
 		decl = parse_function(parser)!;
 		break;
 	case TokenType.MODULE:
-		decl = parse_module(parser)!;
-		break;
+		return FOUND_MODULE~;
 	case TokenType.IMPORT: 
 		decl = parse_import(parser)!;
 	default:

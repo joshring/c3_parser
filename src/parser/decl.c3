@@ -15,11 +15,11 @@ fn Decl*? parse_module(Parser* parser)
 
 	if (!token_is(parser, TokenType.IDENT))
 	{
-		log::error("expected 'Identifier");
+		log::error("expected 'Identifier', got %s", parser.token.text);
 		return UNEXPECTED_TOKEN~;
 	}
 
-	decl.mod.name.start = parser.token.position();
+	AstPosition start = parser.token.position();
 
 	//TODO: better way?
 	do 
@@ -28,8 +28,9 @@ fn Decl*? parse_module(Parser* parser)
 	} 
 	while (token_is(parser, TokenType.IDENT) || token_is(parser, TokenType.SCOPE));
 
-	decl.mod.name.end = parser.token.position();
-	decl.mod.name.end.col -= 1;
+	AstPosition end = parser.token.position();
+	
+	decl.mod.name = parser.ident(start, end);
 
 	expect(parser, TokenType.EOS)!;
 
@@ -47,7 +48,7 @@ fn Decl*? parse_import(Parser* parser)
 	Decl* decl = mem::tnew(Decl);
 	decl.type = DeclType.IMPORT;
 
-	decl.name.start = parser.token.position();
+	AstPosition start = parser.token.position();
 
 	do 
 	{
@@ -55,8 +56,9 @@ fn Decl*? parse_import(Parser* parser)
 	} 
 	while (token_is(parser, TokenType.IDENT) || token_is(parser, TokenType.SCOPE));
 
-	decl.name.end = parser.token.position();
-	decl.name.end.col -= 1;
+	AstPosition end = parser.token.position();
+
+	decl.imp.name = parser.ident(start, end);
 
 	return decl;
 }
@@ -78,16 +80,14 @@ fn Decl*? parse_function(Parser* parser)
 		consume(parser, TokenType.TYPE_IDENT)!;
 	}
 
-	decl.func.ret_type.start = parser.token.position();
-	decl.func.ret_type.end = parser.token.position_end();
-
+	decl.func.ret_type = parser.ident(parser.token.position(), parser.token.position_end());
+	
 	advance(parser)!;
 
 	// parse name
 	expect(parser, TokenType.IDENT)!;
 	
-	decl.name.start = parser.token.position();
-	decl.name.end = parser.token.position_end();
+	decl.name = parser.ident(parser.token.position(), parser.token.position_end());
 
 	if (!consume(parser, TokenType.IDENT)!)
 	{
@@ -97,7 +97,7 @@ fn Decl*? parse_function(Parser* parser)
 
 	consume(parser, TokenType.LPAREN)!;
 
-	decl.func.args.start = parser.token.position();
+	AstPosition start = parser.token.position();
 
 	// just simulate parsing args for now
 	while (!token_is(parser, TokenType.RPAREN))
@@ -105,7 +105,9 @@ fn Decl*? parse_function(Parser* parser)
 		advance(parser)!;
 	}
 
-	decl.func.args.end = parser.token.position_end();
+	AstPosition end = parser.token.position_end();
+
+	decl.func.args = parser.ident(start, end);
 
 	advance(parser)!;
 

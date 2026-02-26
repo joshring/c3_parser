@@ -38,18 +38,18 @@ fn void indent(int depth) @private
     }
 }
 
-fn void dump(Ast* ast, String src)
+fn void dump(Ast* ast)
 {
 	int count = (int)ast.decls.len();
 
    	for (int i = 0; i < count; i++)
     {
         bool is_last = (i == count - 1);
-        print_decl(ast.decls[i], "", is_last, src);
+        print_decl(ast.decls[i], "", is_last);
     }
 }
 
-fn void print_decl(Decl* decl, String prefix, bool is_last, String src)
+fn void print_decl(Decl* decl, String prefix, bool is_last)
 {
     print_prefix(prefix, is_last);
 
@@ -58,17 +58,17 @@ fn void print_decl(Decl* decl, String prefix, bool is_last, String src)
         case FUNC:
         {
             (void)io::printf("FuncDecl: %s\n",
-                decl.name.slice_text(src));
+                decl.name.get_string());
 
             String child_prefix = make_child_prefix(prefix, is_last);
-            print_func_decl(&decl.func, child_prefix, src);
+            print_func_decl(&decl.func, child_prefix);
             break;
         }
 
         case MODULE:
         {
             (void)io::printf("ModuleDecl: %s\n",
-                decl.mod.name.slice_text(src));
+                decl.mod.name.get_string());
             break;
         }
 
@@ -76,23 +76,23 @@ fn void print_decl(Decl* decl, String prefix, bool is_last, String src)
         {
 
             (void)io::printf("ImportDecl: %s\n",
-                decl.name.slice_text(src));
+                decl.name.get_string());
             break;
         }
     }
 }
 
-fn void print_func_decl(FuncDecl* decl, String prefix, String src)
+fn void print_func_decl(FuncDecl* decl, String prefix)
 {
     int child_count = FuncDecl.membersof.len;
 
     // --- Return Type ---
     print_prefix(prefix, false);
-    (void)io::printfn("RetType: %s", decl.ret_type.slice_text(src));
+    (void)io::printfn("RetType: %s", decl.ret_type.get_string());
 
     // --- Args ---
     print_prefix(prefix, false);
-    (void)io::printfn("Args: %s", decl.args.slice_text(src));
+    (void)io::printfn("Args: %s", decl.args.get_string());
 
     // --- Block ---
     print_prefix(prefix, true);
@@ -101,11 +101,11 @@ fn void print_func_decl(FuncDecl* decl, String prefix, String src)
     if (decl.block != null)
     {
         String child_prefix = make_child_prefix(prefix, true);
-        print_stmt(decl.block, child_prefix, true, src);
+        print_stmt(decl.block, child_prefix, true);
     }
 }
 
-fn void print_stmt(Stmt* stmt, String prefix, bool is_last, String src)
+fn void print_stmt(Stmt* stmt, String prefix, bool is_last)
 {
     print_prefix(prefix, is_last);
 
@@ -126,7 +126,7 @@ fn void print_stmt(Stmt* stmt, String prefix, bool is_last, String src)
     }
 }
 
-fn void print_expr(Expr* expr, String prefix, bool is_last, String src)
+fn void print_expr(Expr* expr, String prefix, bool is_last)
 {
     print_prefix(prefix, is_last);
 
