@@ -22,4 +22,5 @@ import std::io;
 fn void test(char arg)
 {
 	io::printn("hello there");
+	defer io::printn("do you know tha way");
 }

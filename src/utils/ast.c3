@@ -57,8 +57,7 @@ fn void print_decl(Decl* decl, String prefix, bool is_last)
     {
         case FUNC:
         {
-            (void)io::printf("FuncDecl: %s\n",
-                decl.name.get_string());
+            (void)io::printf("FuncDecl: %s\n", decl.name.get_string());
 
             String child_prefix = make_child_prefix(prefix, is_last);
             print_func_decl(&decl.func, child_prefix);
@@ -67,18 +66,19 @@ fn void print_decl(Decl* decl, String prefix, bool is_last)
 
         case MODULE:
         {
-            (void)io::printf("ModuleDecl: %s\n",
-                decl.mod.name.get_string());
+            (void)io::printf("ModuleDecl: %s\n", decl.mod.name.get_string());
             break;
         }
 
         case IMPORT:
         {
 
-            (void)io::printf("ImportDecl: %s\n",
-                decl.name.get_string());
+            (void)io::printf("ImportDecl: %s\n", decl.imp.name.get_string());
             break;
         }
+
+		default:
+			unreachable();
     }
 }
 
@@ -94,14 +94,9 @@ fn void print_func_decl(FuncDecl* decl, String prefix)
     print_prefix(prefix, false);
     (void)io::printfn("Args: %s", decl.args.get_string());
 
-    // --- Block ---
-    print_prefix(prefix, true);
-    io::print("Block\n");
-
     if (decl.block != null)
     {
-        String child_prefix = make_child_prefix(prefix, true);
-        print_stmt(decl.block, child_prefix, true);
+		print_stmt(decl.block, prefix, true);
     }
 }
 
@@ -120,6 +115,23 @@ fn void print_stmt(Stmt* stmt, String prefix, bool is_last)
 		
             break;
         }
+		case BLOCK:
+		{	
+			int len = (int)stmt.block.stmts.len;
+
+			io::print("Block\n");
+
+			if (len <= 0) break;
+			String child_prefix = make_child_prefix(prefix, len > 0);
+       		(void)io::printf("%s", child_prefix);
+
+			foreach (child : stmt.block.stmts)
+			{
+				
+			}
+
+			break;
+		}
         default:
             io::print("Stmt\n");
             break;

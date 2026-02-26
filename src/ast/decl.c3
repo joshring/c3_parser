@@ -7,6 +7,8 @@ enum DeclType
 	MODULE,
 	IMPORT,
 	FUNC,
+	ALIAS,
+	TYPEDEF,
 }
 
 struct Decl (Printable)
@@ -46,4 +48,18 @@ struct ModuleDecl
 struct ImportDecl 
 {
 	Ident name;
+}
+
+struct AliasDecl 
+{
+	Ident name;
+	Decl* decl;
+	bool is_func;
+	bool is_redef;
+}
+
+struct TypedefDecl
+{
+	Ident name;
+	Decl* decl;
 }
