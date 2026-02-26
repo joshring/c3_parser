@@ -18,6 +18,7 @@ struct Decl (Printable)
 	union
 	{
 		FuncDecl func;
+		ModuleDecl mod;
 		// more types go here later
 	}
 }
@@ -27,12 +28,13 @@ fn usz? Decl.to_format(&self, Formatter* fmt) @dynamic
 	switch (self.type)
 	{
 	case MODULE:
-		return fmt.printf("{ <MODULE> name: %s, attributes: %s }",
-			self.name,
-			self.attributes,
+		return fmt.printf("{ <MODULE> path: %s}",
+			self.mod.name,
 		);
 	case IMPORT: 
-		return fmt.printf("{ <IMPORT> }");
+		return fmt.printf("{ <IMPORT> path: %s}",
+			self.name,
+		);
 	case FUNC:
 		return fmt.printf("{ <FUNC> name: %s, attributes: %s, ret_type: %s, args: %s }",
 			self.name,
@@ -48,9 +50,9 @@ fn String? Decl.to_string(self, Allocator alloc, String text)
 	switch (self.type)
 	{
 	case MODULE:
-		return string::format(alloc, "(decl_module %s)", self.name.slice_text(text));
+		return string::format(alloc, "(<ModuleDecl> %s)", self.mod.name.slice_text(text));
 	case IMPORT:
-		return string::format(alloc, "(decl_import)");
+		return string::format(alloc, "(<ImportDecl> %s", self.name.slice_text(text));
 	case FUNC:
 		return string::format(alloc, "(<FuncDecl> %s %s (%s))",
 			self.name.slice_text(text),
@@ -73,3 +75,9 @@ struct VarDecl
 {
 	AstRange name;
 }
+
+struct ModuleDecl 
+{
+	AstRange name;
+}
+

@@ -1,6 +1,6 @@
 module c3_parser;
 import c3::lexer;
-
+import utils::ast;
 import std::io;
 import c3_parser::parser;
 
@@ -26,11 +26,8 @@ fn int main(String[] args)
 	{
 		log::error("%s", err);
 	}
-
-	foreach (Decl* decl : parser.ast.decls)
-	{
-		log::debug(decl.to_string(tmem, src)!!);
-	}
-
+	
+	ast::dump(parser.ast, src);
+	
 	return 0;
 }
