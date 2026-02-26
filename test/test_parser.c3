@@ -33,5 +33,4 @@ fn void test_parser()
 	{
 		log::debug("Decl -> %s", decl.type);
 	};
-
 }
