@@ -119,11 +119,9 @@ fn void? parse_file(Project* project, Path path)
 			}
 			else
 			{
-				io::printn(excuse);
+				//io::printn(excuse);
 				return excuse~;
 			}
 		}
-	
-		parser::advance(&parser)!;
 	}
 }

@@ -13,26 +13,31 @@ fn Decl*? parse_module(Parser* parser)
 	Decl* decl = mem::tnew(Decl);
 	decl.type = DeclType.MODULE;
 
-	if (!token_is(parser, TokenType.IDENT))
-	{
-		log::error("expected 'Identifier', got %s", parser.token.text);
-		return UNEXPECTED_TOKEN~;
-	}
+	expect(parser, TokenType.IDENT)!;
 
 	AstPosition start = parser.token.position();
+	AstPosition end @noinit;
 
-	//TODO: better way?
-	do 
+	while (true) 
 	{
-		advance(parser)!;
-	} 
-	while (token_is(parser, TokenType.IDENT) || token_is(parser, TokenType.SCOPE));
+		end = parser.token.position_end();
 
-	AstPosition end = parser.token.position();
-	
+		if (!consume(parser, TokenType.IDENT)!)
+		{
+			log::error("expected a valid identifier");
+			return UNEXPECTED_TOKEN~;
+		}
+
+		if (!consume(parser, TokenType.SCOPE)!)
+		{
+			break;
+		}
+	}
+
 	decl.mod.name = parser.ident(start, end);
 
 	expect(parser, TokenType.EOS)!;
+	advance(parser)!;
 
 	return decl;
 }
@@ -49,16 +54,28 @@ fn Decl*? parse_import(Parser* parser)
 	decl.type = DeclType.IMPORT;
 
 	AstPosition start = parser.token.position();
+	AstPosition end @noinit;
 
-	do 
+	while (true) 
 	{
-		advance(parser)!;
-	} 
-	while (token_is(parser, TokenType.IDENT) || token_is(parser, TokenType.SCOPE));
+		end = parser.token.position_end();
 
-	AstPosition end = parser.token.position();
+		if (!consume(parser, TokenType.IDENT)!)
+		{
+			log::error("expected a valid identifier");
+			return UNEXPECTED_TOKEN~;
+		}
+
+		if (!consume(parser, TokenType.SCOPE)!)
+		{
+			break;
+		}
+	}
 
 	decl.imp.name = parser.ident(start, end);
+
+	expect(parser, TokenType.EOS)!;
+	advance(parser)!;
 
 	return decl;
 }
