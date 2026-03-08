@@ -2,11 +2,13 @@ module c3_parser::parser;
 import c3_parser::ast;
 import c3::lexer;
 
+import c3_parser::common;
+
 fn Decl*? parse_module(Parser* parser)
 {
 	if (!consume(parser, TokenType.MODULE)!)
 	{
-		log::error("expected 'module'");
+		parser.error("expected 'module'");
 		return UNEXPECTED_TOKEN~;
 	}
 
@@ -15,16 +17,16 @@ fn Decl*? parse_module(Parser* parser)
 
 	expect(parser, TokenType.IDENT)!;
 
-	AstPosition start = parser.token.position();
-	AstPosition end @noinit;
+	SourceSpan start = parser.span;
+	SourceSpan end @noinit;
 
 	while (true) 
 	{
-		end = parser.token.position_end();
+		end = parser.span;
 
 		if (!consume(parser, TokenType.IDENT)!)
 		{
-			log::error("expected a valid identifier");
+			parser.error("expected a valid identifier");
 			return UNEXPECTED_TOKEN~;
 		}
 
@@ -34,7 +36,7 @@ fn Decl*? parse_module(Parser* parser)
 		}
 	}
 
-	decl.mod.name = parser.ident(start, end);
+	decl.span = start.combine(end);
 
 	expect(parser, TokenType.EOS)!;
 	advance(parser)!;
@@ -46,23 +48,23 @@ fn Decl*? parse_import(Parser* parser)
 {
 	if (!consume(parser, TokenType.IMPORT)!)
 	{
-		log::error("expected 'import");
+		parser.error("expected 'import");
 		return UNEXPECTED_TOKEN~;
 	}
 
 	Decl* decl = mem::tnew(Decl);
 	decl.type = DeclType.IMPORT;
 
-	AstPosition start = parser.token.position();
-	AstPosition end @noinit;
+	SourceSpan start = parser.span;
+	SourceSpan end @noinit;
 
 	while (true) 
 	{
-		end = parser.token.position_end();
+		end = parser.span;
 
 		if (!consume(parser, TokenType.IDENT)!)
 		{
-			log::error("expected a valid identifier");
+			parser.error("expected a valid identifier");
 			return UNEXPECTED_TOKEN~;
 		}
 
@@ -72,7 +74,7 @@ fn Decl*? parse_import(Parser* parser)
 		}
 	}
 
-	decl.imp.name = parser.ident(start, end);
+	decl.span = start.combine(end);
 
 	expect(parser, TokenType.EOS)!;
 	advance(parser)!;
@@ -84,7 +86,7 @@ fn Decl*? parse_function(Parser* parser)
 {
 	if (!consume(parser, TokenType.FUNC)!)
 	{
-		log::error("expected 'fn'");
+		parser.error("Expected 'fn'");
 		return UNEXPECTED_TOKEN~;
 	}
 
@@ -97,24 +99,24 @@ fn Decl*? parse_function(Parser* parser)
 		consume(parser, TokenType.TYPE_IDENT)!;
 	}
 
-	decl.func.ret_type = parser.ident(parser.token.position(), parser.token.position_end());
+	decl.func.ret_type = parser.ident();
 	
 	advance(parser)!;
 
 	// parse name
 	expect(parser, TokenType.IDENT)!;
 	
-	decl.name = parser.ident(parser.token.position(), parser.token.position_end());
+	decl.name = parser.ident();
 
 	if (!consume(parser, TokenType.IDENT)!)
 	{
-		log::error("expected 'Identifier' after Type");
+		parser.error("expected 'Identifier' after Type");
 		return UNEXPECTED_TOKEN~;
 	}
 
 	consume(parser, TokenType.LPAREN)!;
 
-	AstPosition start = parser.token.position();
+	SourceSpan start = parser.span;
 
 	// just simulate parsing args for now
 	while (!token_is(parser, TokenType.RPAREN))
@@ -122,9 +124,9 @@ fn Decl*? parse_function(Parser* parser)
 		advance(parser)!;
 	}
 
-	AstPosition end = parser.token.position_end();
+	SourceSpan end = parser.span;
 
-	decl.func.args = parser.ident(start, end);
+	decl.func.args = start.combine(end);
 
 	advance(parser)!;
 
@@ -134,6 +136,22 @@ fn Decl*? parse_function(Parser* parser)
 	{
 		decl.func.block = parse_block(parser)!;
 	}
+
+	return decl;
+}
+
+fn Decl*? parse_global_decl(Parser* parser)
+{
+	bool is_thread_local = consume(parser, TokenType.TLOCAL)!;
+
+	if (token_is(parser, TokenType.CONST_IDENT))
+	{
+		parser.error("Expected ''");
+		return UNEXPECTED_TOKEN~;
+	}
+
+	Decl* decl = mem::tnew(Decl);
+	decl.type = DeclType.FUNC;
 
 	return decl;
 }

@@ -5,6 +5,9 @@ import c3_parser::mod;
 import c3_parser::ast;
 import c3::lexer;
 
+import c3_parser::common;
+import c3_parser::diagnostics;
+
 import std::collections::map;
 import std::io;
 
@@ -23,8 +26,9 @@ fn Project* init(Allocator alloc)
 	Project* proj = allocator::new(alloc, Project);
 
 	proj.alloc = alloc;
-
 	proj.modules.init(alloc);
+
+	diagnostics::init(alloc);
 
 	return proj;
 }
@@ -36,6 +40,8 @@ fn void free(Project* proj)
 {
 	allocator::free(proj.alloc, proj);
 	proj.modules.free();
+
+	diagnostics::free();
 }
 
 fn Module* get_or_create_module(Project* project, String module_name)
@@ -76,7 +82,7 @@ fn void? parse_file(Project* project, Path path)
 {
 	String src = (String)file::load(tmem, path.path_string)!;
 
-	io::printfn("src len: %s", src.len);
+	FileID file_id = diagnostics::add_file(tmem, path.path_string, src);
 
 	Lexer lexer;
 	lexer.init(src);
@@ -85,6 +91,8 @@ fn void? parse_file(Project* project, Path path)
 		.lexer = lexer,
 		.src = src,
 	};
+
+	parser.span.file_id = file_id;
 
 	ModuleSection* current_section = null;
 
@@ -96,7 +104,7 @@ fn void? parse_file(Project* project, Path path)
 		if (parser::token_is(&parser, TokenType.MODULE))
 		{
 			Decl* module_decl = parser::parse_module(&parser)!;
-			Module* mod = get_or_create_module(project, module_decl.mod.name.get_string());
+			Module* mod = get_or_create_module(project, diagnostics::get_string(module_decl.span));
 
 			current_section = new_module_section(project, mod, path.path_string);
 

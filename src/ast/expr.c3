@@ -2,6 +2,8 @@ module c3_parser::ast;
 
 import std::io;
 
+import c3_parser::common;
+
 enum ExprType
 {
 	TYPE_IDENT,
@@ -19,5 +21,5 @@ struct Expr
 struct ExprTypeIdent
 {
 	// range for entire type ("MyType"), even for generics ("HashSet{int}")
-	AstRange type;
+	SourceSpan type;
 }

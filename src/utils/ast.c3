@@ -1,6 +1,9 @@
 module utils::ast;
 
 import c3_parser::ast;
+import c3_parser::common;
+import c3_parser::diagnostics;
+
 import std::io;
 import std::collections::list;
 
@@ -57,7 +60,7 @@ fn void print_decl(Decl* decl, String prefix, bool is_last)
     {
         case FUNC:
         {
-            (void)io::printf("FuncDecl: %s\n", decl.name.get_string());
+            (void)io::printf("FuncDecl: %s\n", decl.name.text());
 
             String child_prefix = make_child_prefix(prefix, is_last);
             print_func_decl(&decl.func, child_prefix);
@@ -66,14 +69,14 @@ fn void print_decl(Decl* decl, String prefix, bool is_last)
 
         case MODULE:
         {
-            (void)io::printf("ModuleDecl: %s\n", decl.mod.name.get_string());
+            (void)io::printf("ModuleDecl: %s\n", diagnostics::get_string(decl.span));
             break;
         }
 
         case IMPORT:
         {
 
-            (void)io::printf("ImportDecl: %s\n", decl.imp.name.get_string());
+            (void)io::printf("ImportDecl: %s\n", diagnostics::get_string(decl.span));
             break;
         }
 
@@ -88,11 +91,11 @@ fn void print_func_decl(FuncDecl* decl, String prefix)
 
     // --- Return Type ---
     print_prefix(prefix, false);
-    (void)io::printfn("RetType: %s", decl.ret_type.get_string());
+    (void)io::printfn("RetType: %s", decl.ret_type.text());
 
     // --- Args ---
     print_prefix(prefix, false);
-    (void)io::printfn("Args: %s", decl.args.get_string());
+    (void)io::printfn("Args: %s", diagnostics::get_string(decl.args));
 
     if (decl.block != null)
     {

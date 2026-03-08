@@ -1,6 +1,7 @@
 module c3_parser::ast;
 
 import std::io;
+import c3_parser::common;
 
 enum StmtType
 {
@@ -24,15 +25,9 @@ struct Stmt
 	}
 }
 
-<*
-	The body of a function and so on.
-
-	body.start -> '{' 
-	body.end -> '}'
-*>
 struct BlockStmt
 {
-	AstRange body;
+	SourceSpan body;
 	Stmt[] stmts;
 }
 
@@ -56,12 +51,12 @@ struct ExprStmt
 
 struct ReturnStmt
 {
-	AstRange ret;
+	SourceSpan ret;
 }
 
 struct DeferStmt 
 {
-	AstRange def;
+	SourceSpan def;
 	Stmt* block;
 	bool is_try;
 	bool is_catch;

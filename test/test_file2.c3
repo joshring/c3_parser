@@ -6,3 +6,8 @@ fn void some_function(char arg)
 {
 	io::printn("hello there");
 }
+
+fn void some_other_function(char arg)
+{
+	io::printn("hello there");
+}

@@ -7,7 +7,10 @@ fn void parse(uint value)
 	io::printn("foo");
 }
 
-fn int foo(uint value)
+<*
+	test errors
+*>
+fn int int foo(uint value)
 {
 	return 0;
 }

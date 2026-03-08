@@ -2,20 +2,21 @@ module c3_parser::parser;
 
 import c3_parser::ast;
 import c3::lexer;
+import c3_parser::common;
 
 fn Stmt*? parse_block(Parser* parser)
 {
  	if (catch expect(parser, TokenType.LBRACE))
 	{
 		// TODO: what error msg?
-		log::error("invalid 'body' no LBRACE");
+		parser.error("invalid 'body' no LBRACE");
 		return UNEXPECTED_TOKEN~;
 	}
 
 	Stmt* stmt = mem::tnew(Stmt);
 	stmt.type = StmtType.BLOCK;
 
-	stmt.block.body.start = parser.token.position();
+	SourceSpan start = parser.span;
 
 	// advance away from '{'
 	advance(parser)!;
@@ -28,7 +29,7 @@ fn Stmt*? parse_block(Parser* parser)
 	} 
 	while (token.type != TokenType.RBRACE);
 
-	stmt.block.body.end = token.position_end();
+	stmt.block.body = start.combine(parser.span);
 
 	return stmt;
 }
@@ -38,7 +39,7 @@ fn Stmt*? parse_defer(Parser* parser)
 	if (catch expect(parser, TokenType.DEFER))
 	{
 		// TODO: what error msg?
-		log::error("Expected 'defer'");
+		parser.error("Expected 'defer'");
 		return UNEXPECTED_TOKEN~;
 	}
 
@@ -61,13 +62,13 @@ fn Stmt*? parse_defer(Parser* parser)
 
 		if (!consume(parser, TokenType.CATCH)!)
 		{
-			log::error("Expected 'catch' after 'defer ('");
+			parser.error("Expected 'catch' after 'defer ('");
 			return UNEXPECTED_TOKEN~;
 		}
 
 		if (catch expect(parser, TokenType.IDENT))
 		{
-			log::error("Expected 'Identifier' after catch");
+			parser.error("Expected 'Identifier' after catch");
 			return UNEXPECTED_TOKEN~;
 		}
 
@@ -75,7 +76,7 @@ fn Stmt*? parse_defer(Parser* parser)
 
 		if (catch expect(parser, TokenType.RPAREN))
 		{
-			log::error("Expected a closing ')' after 'Identifier");
+			parser.error("Expected a closing ')' after 'Identifier");
 			return UNEXPECTED_TOKEN~;
 		}
 

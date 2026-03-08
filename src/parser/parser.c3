@@ -3,6 +3,8 @@ module c3_parser::parser;
 import c3::lexer;
 import c3_parser::ast;
 import c3_parser::mod;
+import c3_parser::common;
+import c3_parser::diagnostics;
 
 import std::collections::list;
 import std::io;
@@ -17,9 +19,21 @@ faultdef
 struct Parser
 {
 	Lexer lexer;
-	ModuleSection* section;
-	String src;
 	Token token;
+	Token next;
+	String src;
+	ModuleSection* section;
+	SourceSpan span;
+}
+
+macro void Parser.error(self, String fmt, ...)
+{    
+    Position pos = diagnostics::get_pos(self.span.file_id, (uint)self.span.start);
+    FileEntry* file = diagnostics::files[(usz)self.span.file_id];
+
+    io::printf("%s:%d:%d: Error: ", file.name, pos.line, pos.column);
+    io::printf(fmt, $vasplat);
+    io::printf("\n");
 }
 
 fn bool Parser.eof(&self) @inline 
@@ -82,7 +96,7 @@ fn bool is_keyword_ident(TokenType type)
 	return false;
 }
 
-fn bool is_some_ident(TokenType type)
+fn bool is_some_ident(TokenType type) 
 {
 	switch (type)
 	{
@@ -110,13 +124,15 @@ fn void? advance(Parser* parser)
 	}
 
 	parser.token = parser.lexer.next()!;
+	parser.span.start = parser.token.offset;
+	parser.span.end =  parser.token.offset + parser.token.len - 1;
 }
 
 fn void? expect(Parser* parser, TokenType type) @inline
 {
 	if (!token_is(parser, type))
 	{
-		log::error("Expected '%s' got '%s'", type, parser.token.type);
+		parser.error("Expected '%s' got '%s'", type, parser.token.type);
 		return UNEXPECTED_TOKEN~;
 	}
 }
@@ -132,19 +148,12 @@ fn bool? consume(Parser* parser, TokenType type)
 	return false;
 }
 
-fn Ident Parser.ident(&self, AstPosition start, AstPosition end)
+macro Ident Parser.ident(&self)
 {
-	Ident ident = (Ident){
-		.range.start = start,
-		.range.end = end,
+	return (Ident){
+		.range = self.span,
+		.id = 0
 	};
-
-	if (!@ok(@try(ident.name, ident.range.slice_text(self.src))))
-	{
-		ident.name = "";
-	}
-
-	return ident;
 }
 
 <*
